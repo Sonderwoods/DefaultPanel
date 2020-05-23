@@ -17,6 +17,11 @@ USE AT OWN RISK!
 - Need to add a grasshopper "undo event" when activating. (Help appreciated..)
 - Make it work for sliders too?
 
+### SUGGESTIONS
+Contact me via LinkedIn or Grasshopper Discourse: 
+https://www.linkedin.com/in/mathias-sønderskov-schaltz-374b0232
+https://discourse.mcneel.com/u/sonderskovmathias/summary
+
 ### Mentions
 highly based on the ScriptSync code by Long Nguyen
 Help on forums from Mahdiyar
