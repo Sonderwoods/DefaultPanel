@@ -12,4 +12,4 @@ USE AT OWN RISK!
 
 
 highly based on the ScriptSync code by Long Nguyen
-![Screenshot](Misc/screenshot.png)
+![Screenshot](Misc/movie.gif)
