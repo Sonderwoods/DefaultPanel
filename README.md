@@ -12,4 +12,5 @@ USE AT OWN RISK!
 
 
 highly based on the ScriptSync code by Long Nguyen
+![bar](Misc/Bar.png)
 ![Screenshot](Misc/movie.gif)
