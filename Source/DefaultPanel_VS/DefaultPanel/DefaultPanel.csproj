@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GhcDefaultPanel.cs" />
+    <Compile Include="GhcDefaultPanelCanvasInteractionPreview.cs" />
     <Compile Include="DefaultPanelInfo.cs" />
     <Compile Include="GhcDefaultPanelAttributes.cs" />
     <Compile Include="GhcDefaultPanelCanvasInteraction.cs" />

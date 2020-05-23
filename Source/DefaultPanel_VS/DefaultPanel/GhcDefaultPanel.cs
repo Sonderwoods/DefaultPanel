@@ -1,210 +1,234 @@
-﻿using GH_IO.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using GH_IO.Serialization;
 using Grasshopper;
 using Grasshopper.GUI;
-using Grasshopper.GUI.Script;
 using Grasshopper.Kernel;
-using System;
-using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
-using Microsoft.CSharp.RuntimeBinder;
-using Grasshopper.Kernel.Special;
-using Grasshopper.Kernel.Attributes;
-using Grasshopper.GUI.Canvas;
-using System.Collections.Generic;
-
-/*
- *  HIGHLY based on code by Long Nguyens ScriptSync (and he had some help from David Rutten), Thanks both of you.
- *  Also thanks to Mahdiyar - https://discourse.mcneel.com/u/Mahdiyar
- */
-
-
+using Rhino.Geometry;
 
 namespace DefaultPanel
 {
     public partial class GhcDefaultPanel : GH_Component
     {
-        GH_Document ghDocument = null;
-        List<IGH_ActiveObject> ghActiveObjects;
-        private Guid targetPanelComponentGuid = Guid.Empty;
-        private Guid sourcePanelComponentGuid = Guid.Empty;
 
+        private Guid targetPanelComponentGuid = Guid.Empty;
+        public Guid TargetPanelComponentGuid {
+            get
+            {
+                return targetPanelComponentGuid;
+            }
+            set
+            {
+                targetPanelComponentGuid = value;
+            }
+         }
+
+        /// <summary>
+        /// Initializes a new instance of the GhcDefaultPanelTest class.
+        /// </summary>
         public GhcDefaultPanel()
-            : base(
-                "DefaultPanel",
-                "DefaultPanel",
-                "Defaulting panels in your gh scene",
-                "Params",
-                "Util")
+             : base(
+                 "Default",
+                 "▼",
+                 "DefaultPanel\nDefaulting panels in your gh scene\n\nMathias Sønderskov 2020\nInspiration from Long Nguyen\nMinor details helped from Mahdiyar",
+                 "Params",
+                 "Util")
         {
         }
 
+        /// <summary>
+        /// Registers all the input parameters for this component.
+        /// </summary>
+        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        {
+            pManager.AddTextParameter("Default Text", "T", "Default Text", GH_ParamAccess.item, "");
+            pManager.AddBooleanParameter("Reset", "R", "Reset", GH_ParamAccess.item, false);
+        }
 
-        protected override Bitmap Icon => Properties.Resources.Icon_GhcDefaultPanel;
-        public override Guid ComponentGuid => new Guid("{e40ccee5-232e-44a0-9624-fb0ea34a833a}");
-        public override GH_Exposure Exposure => GH_Exposure.primary;
-        public override void CreateAttributes() { Attributes = new GhcDefaultPanelAttributes(this); }
+        /// <summary>
+        /// Registers all the output parameters for this component.
+        /// </summary>
+        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        {
+        }
 
-        protected override void RegisterInputParams(GH_InputParamManager pManager) { }
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager) { }
-
-
-
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            AddWire();
             //dynamic targetPanelComponent = OnPingDocument().FindComponent(targetPanelComponentGuid);
             //dynamic sourcePanelComponent = OnPingDocument().FindComponent(sourcePanelComponentGuid);
+            string defaultText = "";
+            bool run = false;
+
+            DA.GetData(1, ref run);
+
+            DA.GetData(0, ref defaultText);
 
             dynamic targetPanelComponent = OnPingDocument().FindObject(targetPanelComponentGuid, true);
-            dynamic sourcePanelComponent = OnPingDocument().FindObject(sourcePanelComponentGuid, true);
+            if (targetPanelComponent == null)
+            {
+                targetPanelComponentGuid = Guid.Empty;
+            }
+
+            //dynamic sourcePanelComponent = OnPingDocument().FindObject(sourcePanelComponentGuid, true);
 
             if (targetPanelComponent == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Please set a target panel component (in the right-click menu)");
                 return;
             }
-            if (sourcePanelComponent == null)
+            /*if (sourcePanelComponent == null)
             {
                 
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Please set a source panel component (in the right-click menu)");
                 return;
-            }
+            }*/
 
-    
+            if (run && targetPanelComponent != null)
+                UpdatePanels(defaultText);
         }
 
+        protected override Bitmap Icon => Properties.Resources.Icon_GhcDefaultPanel;
 
+        public override GH_Exposure Exposure => GH_Exposure.primary;
+        //public override void CreateAttributes() { Attributes = new GhcDefaultPanelAttributes(this); }
+
+
+        public void UpdatePanels()
+        {
+            dynamic targetPanelComponent = OnPingDocument().FindObject(targetPanelComponentGuid, true);
+            string defaultText = this.Params.Input[0].ToString();
+
+            UpdatePanels(targetPanelComponent, defaultText);
+        }
+
+        public void UpdatePanels(string defaultText)
+        {
+            dynamic targetPanelComponent = OnPingDocument().FindObject(targetPanelComponentGuid, true);
+
+            UpdatePanels(targetPanelComponent, defaultText);
+        }
+        public void UpdatePanels(dynamic targetPanelComponent, string defaultText)
+        {
+            if (targetPanelComponent != null)
+            {
+                targetPanelComponent.UserText = defaultText;
+                targetPanelComponent.ExpireSolution(true);
+                //ExpireSolution(true);
+            }
+
+
+        }
+
+        public override bool Read(GH_IReader reader)
+        {
+            targetPanelComponentGuid = reader.GetGuid("targetPanelComponentGuid");
+
+            return base.Read(reader);
+        }
 
         public override bool Write(GH_IWriter writer)
         {
             writer.SetGuid("targetPanelComponentGuid", targetPanelComponentGuid);
-            writer.SetGuid("sourcePanelComponentGuid", sourcePanelComponentGuid);
 
             return base.Write(writer);
         }
 
 
-        public override bool Read(GH_IReader reader)
-        {
-            targetPanelComponentGuid = reader.GetGuid("targetPanelComponentGuid");
-            sourcePanelComponentGuid = reader.GetGuid("sourcePanelComponentGuid");
 
-            return base.Read(reader);
-        }
-
-        public void UpdatePanels()
-        {
-            dynamic targetPanelComponent = OnPingDocument().FindObject(targetPanelComponentGuid, true);
-            dynamic sourcePanelComponent = OnPingDocument().FindObject(sourcePanelComponentGuid, true);
-            
-            UpdatePanels(targetPanelComponent, sourcePanelComponent);
-        }
-
-        public void UpdatePanels(dynamic targetPanelComponent, dynamic sourcePanelComponent)
-        {
-            if (targetPanelComponent != null && sourcePanelComponent != null)
-            {
-                targetPanelComponent.UserText = sourcePanelComponent.UserText;
-                targetPanelComponent.ExpireSolution(true);
-                ExpireSolution(true);
-            }
-                
-
-        }
-
-
-        public void UpdateAllPanels()
-        {
-            ghDocument = OnPingDocument(); // also stolen from Long:)
-            //ghActiveObjects = new List<IGH_ActiveObject>();
-            List<IGH_ActiveObject> allActiveObjects = ghDocument.ActiveObjects();
-
-            foreach (IGH_ActiveObject activeObject in allActiveObjects)
-            {
-                if (activeObject.ComponentGuid.ToString() == "e40ccee5-232e-44a0-9624-fb0ea34a833a") //being this type of object
-                {
-                    Guid target = activeObject.ComponentGuid;
-                    //var myVar = activeObject.Reader["targetPanelComponentGuid"];
-
-                    //MyFunction(myVar);
-                }
-            }
-
-         }
 
         public override bool AppendMenuItems(ToolStripDropDown menu)
         {
-            Menu_AppendItem(
-                menu,
-                "Reset content to defaults",
-                delegate { UpdatePanels(); },
-                null,
-                OnPingDocument().FindObject(sourcePanelComponentGuid, true) != null && OnPingDocument().FindObject(targetPanelComponentGuid, true) != null,
-                false);
-
-            Menu_AppendItem(
-                menu,
-                "Default ALL panels in file(TODO)",
-                delegate { },
-                null,
-                false,
-                false);
-            //Menu_AppendEnableItem(menu);
-            //Menu_AppendSeparator(menu);
-            //Menu_AppendRuntimeMessages(menu);
+            Menu_AppendEnableItem(menu);
+            Menu_AppendRuntimeMessages(menu);
             Menu_AppendSeparator(menu);
-            
-            Menu_AppendSeparator(menu);
-            
-            Menu_AppendItem(
-                menu,
-                sourcePanelComponentGuid == Guid.Empty ? "<-- Set Source Panel      " : "<-- Change Source Panel      ",
-                delegate { Instances.ActiveCanvas.ActiveInteraction = new GhcDefaultPanelCanvasInteration(Instances.ActiveCanvas, new GH_CanvasMouseEvent(), this, false); }, //false=source
-                null,
-                true,
-                false);
 
+
+
+            Menu_AppendSeparator(menu);
 
             Menu_AppendItem(
                 menu,
                 targetPanelComponentGuid == Guid.Empty ? "      Set Target Panel -->" : "      Change Target Panel -->",
-                delegate { Instances.ActiveCanvas.ActiveInteraction = new GhcDefaultPanelCanvasInteration(Instances.ActiveCanvas, new GH_CanvasMouseEvent(), this, true); }, //true=target
+                delegate {
+                    Instances.ActiveCanvas.ActiveInteraction = new GhcDefaultPanelCanvasInteration(Instances.ActiveCanvas, new GH_CanvasMouseEvent(), this);
+                    //AddWire();
+                    }, //true=target
                 null,
                 true,
                 false);
 
-            Menu_AppendSeparator(menu);
-
             Menu_AppendItem(
                 menu,
-                "Disconnect Both",
-                delegate { 
+                "Disconnect Target",
+                delegate {
                     targetPanelComponentGuid = Guid.Empty;
-                    sourcePanelComponentGuid = Guid.Empty;
                     ExpireSolution(true);
                 },
                 null,
-                OnPingDocument().FindObject(targetPanelComponentGuid,true) != null || OnPingDocument().FindObject(sourcePanelComponentGuid, true) != null,
+                 updateConnected(),
                 false);
 
-            menu.Items[0].Visible = false;
-            if (OnPingDocument().FindObject(targetPanelComponentGuid, true) != null && OnPingDocument().FindObject(sourcePanelComponentGuid, true) != null)
-                menu.Items[1].Visible = true;
-            else
-                menu.Items[1].Visible = false;
+            /*Menu_AppendItem(
+                menu,
+                "Check Target",
+                delegate { 
+                    //Instances.ActiveCanvas.ActiveInteraction = new GhcDefaultPanelCanvasInterationPreview(Instances.ActiveCanvas, new GH_CanvasMouseEvent(), this);
+                    AddWire();
+                },
+                null,
+                updateConnected(),
+                false);
+                */
 
-            if (OnPingDocument().FindObject(targetPanelComponentGuid, true) == null && OnPingDocument().FindObject(sourcePanelComponentGuid, true) == null)
-                menu.Items[5].Visible = false;
+            /*if (OnPingDocument().FindObject(targetPanelComponentGuid, true) != null)
+            {
+                menu.Items[1].Visible = true;
+                menu.Items[2].Visible = true;
+
+            }
+
             else
-                menu.Items[5].Visible = true;
+            {
+                menu.Items[1].Visible = false;
+                menu.Items[2].Visible = false;
+            }
+            */
 
             return true;
         }
-        
 
+        public bool updateConnected()
+        {
+            if (OnPingDocument().FindObject(targetPanelComponentGuid, true) != null)
+            {
+                return true;
+            }
+            else
+            {
+                ExpireSolution(true);
+                return false;
+            }
+        }
 
-        
+        /// <summary>
+        /// Gets the unique ID for this component. Do not change this ID after release.
+        /// </summary>
+        /// 
+        public override Guid ComponentGuid
+        {
+            get { return new Guid("02dd9895-add0-44ff-bd55-1cc33190d840"); }
+        }
+
+        public void AddWire()
+        {
+            Instances.ActiveCanvas.ActiveInteraction = new GhcDefaultPanelCanvasInterationPreview(Instances.ActiveCanvas, new GH_CanvasMouseEvent(), this);
+        }
     }
-
-
 }

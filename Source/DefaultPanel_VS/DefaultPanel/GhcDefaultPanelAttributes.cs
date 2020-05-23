@@ -26,13 +26,15 @@ namespace DefaultPanel
 
             public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
             {
-
+                (Owner as GhcDefaultPanel).ExpireSolution(true);
                 (Owner as GhcDefaultPanel).UpdatePanels();
                 return GH_ObjectResponse.Handled;
             }
 
 
-            protected override void Layout()
+
+
+            /*protected override void Layout()
             {
                 //Size size = GH_FontServer.MeasureString("DefaultPanel", GH_FontServer.Standard) + new Size(30, 150);
                 //Bounds = new RectangleF(
@@ -49,15 +51,16 @@ namespace DefaultPanel
                     size.Height
                     );
 
-            }
+            }*/
 
 
             protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
-            {
+                    
+                {
                 if (channel == GH_CanvasChannel.Wires)
                 {
                     var targetComponent = Owner.OnPingDocument().FindObject(Owner.targetPanelComponentGuid, true);
-                    var sourceComponent = Owner.OnPingDocument().FindObject(Owner.sourcePanelComponentGuid, true);
+                    //var sourceComponent = Owner.OnPingDocument().FindObject(Owner.sourcePanelComponentGuid, true);
 
                     
 
@@ -70,12 +73,12 @@ namespace DefaultPanel
                         PointF targetCenter = new PointF(targetBounds.X, targetBounds.Y + targetBounds.Height / 2);
 
                         graphics.DrawLine(
-                            new Pen(Color.Black, 3f) { DashCap = DashCap.Round, DashPattern = new[] { 1f, 0.5f } },
+                            new Pen(Color.Black, 1f) { DashCap = DashCap.Round, DashPattern = new[] { 1f, 0.5f } },
                             myPoint,
                             targetCenter);
                     }
                         
-
+                    /*
                     if (sourceComponent != null)
                     {
                         RectangleF myBounds = Owner.Attributes.Bounds;
@@ -89,11 +92,13 @@ namespace DefaultPanel
                             myPoint,
                             sourceCenter);
                     }
-
+                    */
                 }
+
+                /*
                 else if (channel == GH_CanvasChannel.Objects)
                 {
-                    GH_Palette ghPalette = GH_Palette.Hidden;
+                    GH_Palette ghPalette = GH_Palette.Blue;
                     if (Owner.RuntimeMessageLevel == GH_RuntimeMessageLevel.Warning) ghPalette = GH_Palette.Warning;
                     else if (Owner.RuntimeMessageLevel == GH_RuntimeMessageLevel.Error) ghPalette = GH_Palette.Error;
 
@@ -101,7 +106,7 @@ namespace DefaultPanel
                         GH_Convert.ToRectangle(Bounds),
                         GH_Convert.ToRectangle(Bounds),
                         ghPalette,
-                        "--> DefaultPanel -->",
+                        "DefaultPanel -->",
                         GH_FontServer.Standard,
                         GH_Orientation.horizontal_center,
                         4,
@@ -110,6 +115,7 @@ namespace DefaultPanel
                     ghTextCapsule.Render(graphics, null, Selected, Owner.Locked, false);
                   
                 }
+                */
             }
         }
     }
