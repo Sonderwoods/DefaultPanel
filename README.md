@@ -3,13 +3,22 @@ We have scripts shared by several users and sometimes people overwrite the value
 
 With this little snippet you can connect a source and a target panel using right click. If you double click on the component it will copy content to the target.
 
+### HOWTO
+Insert DefaultPanel to your grasshopper file. Link default values and a run button through grasshopper wires as usual.
+Right click on the DefaultPanel and connect to target panel.
+To update, change button to true or double click on DefaultPanel.
+
+USE AT OWN RISK!
+
+![bar](Misc/Bar.png)
+![Screenshot](Misc/movie.gif)
+
 ### TODO
 - Need to add a grasshopper "undo event" when activating. (Help appreciated..)
 - Make it work for sliders too?
 
-
-USE AT OWN RISK!
-
+### Mentions
 highly based on the ScriptSync code by Long Nguyen
-![bar](Misc/Bar.png)
-![Screenshot](Misc/movie.gif)
+Help on forums from Mahdiyar
+Awesome workplace? Henning Larsen Architects.
+
